@@ -4,7 +4,7 @@
       <UploadImage />
        <!-- <TestComponent /> -->
     </div>
-    <footer class="footer">© 2025 琦月图床 | 开源地址 <a href="">Github</a></footer>
+    <footer class="footer">© 2025 琦月图床 | 开源地址 <a href="https://github.com/xingstar520/vue-qiniu-img-host">Github</a></footer>
   </div>
 </template>
 

@@ -12,8 +12,8 @@
       >
         <template v-if="!imageUrl">
           <div class="upload-inner">
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">点击或拖拽图片到此处上传</div>
-            <p class="upload-tip">支持 JPG, PNG, GIF 等常见图片格式</p>
           </div>
         </template>
         <template v-else>
@@ -21,8 +21,8 @@
             <div class="image-preview">
               <img v-if="fullImageUrl" :src="fullImageUrl" alt="预览" @error="onImgError" />
               <div class="preview-actions">
-                <el-button type="text" icon="el-icon-zoom-in" @click="previewImage"></el-button>
-                <el-button type="text" icon="el-icon-delete" @click="resetUpload"></el-button>
+                <el-button type="text" :icon="ZoomIn" @click.stop="previewImage" />
+                <el-button type="text" :icon="Delete" @click.stop="resetUpload" />
               </div>
             </div>
           </div>
@@ -78,16 +78,22 @@
       <div class="info-box">
         <h4>压缩后</h4>
         <p>
-          宽度：<span :class="{ 'zero-value': compressedWidth === 0 }">{{ compressedWidth }} px</span>
-          高度：<span :class="{ 'zero-value': compressedHeight === 0 }">{{ compressedHeight }} px</span>
-          大小：<span :class="{ 'zero-value': compressedSize === 0 }">{{ compressedSize }} KB </span> 
+          宽度：<span :class="{ 'zero-value': compressedWidth === 0 }"
+            >{{ compressedWidth }} px</span
+          >
+          高度：<span :class="{ 'zero-value': compressedHeight === 0 }"
+            >{{ compressedHeight }} px</span
+          >
+          大小：<span :class="{ 'zero-value': compressedSize === 0 }"
+            >{{ compressedSize }} KB
+          </span>
         </p>
       </div>
     </div>
-    
+
     <!-- 图片预览模态框 -->
     <el-dialog v-model="previewVisible" title="图片预览" width="80%">
-      <img :src="fullImageUrl" style="max-width: 100%; max-height: 80vh;" />
+      <img :src="fullImageUrl" style="max-width: 100%; max-height: 80vh" />
     </el-dialog>
   </div>
 </template>
@@ -96,6 +102,8 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { uploadToQiniu } from '@/api/qiniu'
+import { UploadFilled, ZoomIn, Delete } from '@element-plus/icons-vue'
+
 
 const uploadRef = ref(null)
 const quality = ref(60)
@@ -125,14 +133,14 @@ function updateImageInfo(file, img) {
   const ratio = quality.value / 100
   compressedWidth.value = Math.round(img.width * ratio)
   compressedHeight.value = Math.round(img.height * ratio)
-  compressedSize.value = (file.size * ratio / 1024).toFixed(2)
+  compressedSize.value = ((file.size * ratio) / 1024).toFixed(2)
 }
 
 watch(quality, (val) => {
   if (originalWidth.value && originalHeight.value && originalSize.value) {
-    compressedWidth.value = Math.round(originalWidth.value * val / 100)
-    compressedHeight.value = Math.round(originalHeight.value * val / 100)
-    compressedSize.value = (originalSize.value * val / 100).toFixed(2)
+    compressedWidth.value = Math.round((originalWidth.value * val) / 100)
+    compressedHeight.value = Math.round((originalHeight.value * val) / 100)
+    compressedSize.value = ((originalSize.value * val) / 100).toFixed(2)
   }
 })
 
@@ -175,6 +183,7 @@ function handlePaste(e) {
       // Removed unused variable 'newFileList'
       if (uploadRef.value) {
         uploadRef.value.handleStart(file)
+        handlePasteOrUpload(file)
       }
       break
     }
@@ -210,7 +219,9 @@ onBeforeUnmount(() => {
 .upload-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(240, 249, 255, 0.1) 100%);
   border-radius: 24px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 8px 32px 0 rgba(31, 38, 135, 0.18),
+    0 1px 2px 0 rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(12px);
   padding: 32px 32px 24px 32px;
   min-width: 600px;
@@ -221,7 +232,9 @@ onBeforeUnmount(() => {
 }
 
 .upload-card:hover {
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.22), 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 12px 40px 0 rgba(31, 38, 135, 0.22),
+    0 2px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .upload-section {
@@ -234,7 +247,7 @@ onBeforeUnmount(() => {
 
 .upload-area {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(240, 249, 255, 0.1));
-  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border: none;
   border-radius: 12px;
   width: 100%;
   height: 400px;
@@ -246,7 +259,6 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
   overflow: hidden;
 }
-
 .upload-area:hover {
   border-color: rgba(255, 255, 255, 0.5);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(240, 249, 255, 0.15));
@@ -269,23 +281,35 @@ onBeforeUnmount(() => {
 .upload-area:hover::before {
   opacity: 1;
 }
+.el-upload-dragger {
+  background-color: aqua;
+}
 
+/* td */
 .upload-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  height: 100%;
+  gap: 12px;
   width: 100%;
-  z-index: 1;
-  position: relative;
-  color: #fff;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1); /* 半透明背景 */
+  border: 2px dashed rgba(255, 255, 255, 0.3); /* 半透明边框 */
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8); /* 半透明文字颜色 */
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
-.upload-tip {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+.upload-inner:hover {
+  background: rgba(255, 255, 255, 0.15); /* 悬浮时背景稍微加深 */
+  border-color: rgba(255, 255, 255, 0.5); /* 悬浮时边框加深 */
+}
+
+.el-upload__text {
+  font-size: 16px;
+  color: white;
 }
 
 .image-preview {
@@ -455,5 +479,14 @@ onBeforeUnmount(() => {
   .info-box p {
     font-size: 13px;
   }
+}
+::v-deep(.el-upload-dragger) {
+  background-color: rgba(255, 255, 255, 0.05);
+  height: 300px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none; 
 }
 </style>
