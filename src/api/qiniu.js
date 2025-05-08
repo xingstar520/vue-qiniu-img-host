@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'domin.tjqaq.com/api',
+    baseURL: 'https://domin.tjqaq.com/api',
     timeout: 5000,
     withCredentials: true
 });
